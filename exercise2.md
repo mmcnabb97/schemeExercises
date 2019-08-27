@@ -18,6 +18,9 @@ numbers.
 => (-7 . <list-of-numbers>)
 => (-7 . (<number> . <list-of-numbers>))
 => (-7 . (3 . <list-of-numbers>))
+=> (-7 . (3 . (<number> . <list-of-numbers>)))
+=> (-7 . (3 . (14 . <list-of-numbers>)))
+=> (-7 . (3 . (14 . ())))
 ```
 </details>
 
@@ -30,10 +33,28 @@ grammar.
 <summary>Solution</summary>
 
 ```
-<list>          ::= (<datum> . <list>)
+<list>          ::= (<datum>  <list>)
 <dotted-datum>  ::= (<datum>) | (<datum> . <dotted-datum>)
 <vector>        ::= #() | #(<datum> <vector>)
-<data>          ::= datum | datum data
+<data>          ::= <datum> | <datum> <data>
+
+<list>
+(<datum>  <list>)
+(<data>  <list>)
+(<datum> <data>  <list>)
+(<datum> <datum>  <list>)
+(<datum> <datum>  <datum>)
+(<boolean>  <datum> <datum>)
+(#t  <datum> <datum>)
+(#t  <dotted-datum> <datum>)
+(#t  (<dotted-datum>.<datum>) <datum>)
+(#t  (<datum>.<datum>) <datum>)
+(#t  (<symbol>.<datum>) <datum>)
+(#t  (foo.<datum>) <datum>)
+(#t  (foo.<list>) <datum>)
+(#t  (foo.()) <datum>)
+(#t  (foo.()) <number>)
+(#t  (foo.()) 3)
 ```
 </details>
 
@@ -42,9 +63,35 @@ Write a syntactic derivation that proves `(a "mixed" #(bag (of . data)))`
 is a datum, using either the grammar in the book or the
 revised grammar from the preceding exercise. What is wrong with
 `(a . b . c)`?
+<details>
+<summary>Solution</summary>
+
+```
+<datum>
+<list>
+({<datum>}*)
+(<datum> <datum> <datum>)
+(<symbol> <datum> <datum>)
+(a <datum> <datum>)
+(a <string> <datum>)
+(a "mixed" <datum>)
+(a "mixed" <vector>)
+(a "mixed" #({<datum>}*))
+(a "mixed" #(<datum><datum>))
+(a "mixed" #(<symbol><datum>))
+(a "mixed" #(bag <datum>))
+(a "mixed" #(bag <dotted-datum>))
+(a "mixed" #(bag ({datum}+.<datum>)))
+(a "mixed" #(bag (<datum>.<datum>)))
+(a "mixed" #(bag (<symbol>.<datum>)))
+(a "mixed" #(bag (of.<datum>)))
+(a "mixed" #(bag (of.<symbol>)))
+(a "mixed" #(bag (of.data)))
+```
+</details>
 
 ## Exercise 1.4 [*]
-
+Write a 
 ## Exercise 1.10 [*]
 In the last line of subst-in-symbol-expression, the recursion is on se
 and not a smaller substructure. Why is the recursion guaranteed to halt?
