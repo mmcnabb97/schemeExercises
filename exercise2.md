@@ -91,7 +91,61 @@ revised grammar from the preceding exercise. What is wrong with
 </details>
 
 ## Exercise 1.4 [*]
-Write a 
+Prove that if e is an element of [expression], then there are the same number of left and right parentheses in e  (where [expression] is defined as in section 1.2)
+<details>
+<summary>Solution</summary>
+
+```
+the definition of <expression> is so defined:
+<expression> ::= <identifier>
+             ::= (lambda (<identifier>) <expression>)
+             ::= (<expression> <expression>)
+1. if e is an <identifier> then the number of parentheses is a constant 0 and IH is trivially true.
+2. if e is (lambda (<identifier>) <expression>) then the number of left parantheses is 2 plus any left paranthesis created by the <expression> and the number of right parenthesis is 2 plus any right paranthesis created by the <expression>.
+3. if e is (<expression> <expression>) then the number of left parantheses is 1 plus any left paranthesis created by either <expression> and the number of right parenthesis is 1 plus any right paranthesis created by either <expression>.
+4. Each <expression> in the definitions can then recursively become any rule of <expression>. Therefore we know that the number of parantheses added at each individual step must be:
+(a) 0 left and 0 right
+(b) 2 left and 2 right
+(c) 1 left and 1 right
+5. Using the above information, we can prove if IH(K) is true then IH(K+1) is true
+1. The number of left paranthesis at IH(k) is equal to l and the number of right paranthesis at IH(k) is equal to r such that l=r.
+2. IH(K) must have a number of <expressions> which we will define as s. 
+3. At IH(K+1) we know that these <expressions> will be split in some arbitrary combination between <identifier>, (lambda (<identifier>) <expression>), and (<expression> <expression>). 
+4. The <identifier>s will add 0 left paratheses and 0 right parantheses. We will divide the subsection of s into s1. 
+l+s1*0=r+s1*0
+5. The (lambda (<identifier>) <expression>)s will add 2 left paratheses and 2 right parantheses. We will divide the subsection of s into s2. 
+l+s1*0+s2*2=r+s1*0+s2*2
+6. The (<expression> <expression>)s will add 1 left paratheses and 1 right parantheses. We will divide the subsection of s into s3. 
+l+s1*0+s2*2+s3*1=r+s1*0+s2*2+s3*1
+7. We can first remove the s1*0 term from both sides since that will always equal 0.
+l+s2*2+s3*1=r+s2*2+s3*1
+8. We can then multiply through the other constants.
+l+2s2+s3=r+2s2+s3
+9. Next we can subtract 2s2 from both sides.
+l+s3=r+s3
+10. Next we can subtract s3 from both sides.
+1=r
+11. this equal the original IH(K) term. Therefore we have sufficiently proven that the number of left and right parantheses must always be equal.
+```
+</details>
+
+## Exercise 1.5 [*]
+This version of list-of-numbers? works properly only when it's argument is a list. Extend the definition of list-of-numbers? so that it will work on an artitrary Scheme [datum] and return #f on any argument that is not a list.
+<details>
+<summary>Solution</summary>
+
+```
+(define list-of-numbers?
+  (lambda (lst)
+    (if (null? lst)
+      #t
+      (and
+        (number? (car lst))
+        (list-of-numbers? (cdr lst))))))
+        
+```
+</details>
+
 ## Exercise 1.10 [*]
 In the last line of subst-in-symbol-expression, the recursion is on se
 and not a smaller substructure. Why is the recursion guaranteed to halt?
