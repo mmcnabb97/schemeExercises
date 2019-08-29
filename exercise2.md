@@ -137,12 +137,48 @@ This version of list-of-numbers? works properly only when it's argument is a lis
 ```
 (define list-of-numbers?
   (lambda (lst)
-    (if (null? lst)
-      #t
-      (and
-        (number? (car lst))
-        (list-of-numbers? (cdr lst))))))
+    (if (list? lst )
+      (if (null? lst)
+        #t
+        (and
+          (number? (car lst))
+          (list-of-numbers? (cdr lst))))#f))
         
+```
+</details>
+## Exercise 1.6 [*]
+What happens if nth-elt and list-length are passed symbols when a list is expected? What is the behavior of list-ref and length  in such cases? Write robust versions of nth-elt and list-length.
+
+<details>
+<summary>Solution</summary>
+
+```
+Both will throw an error is given an improper type.
+
+List-ref and length wll provide the proper, error checked answers
+
+(define nth-elt
+  lambda (lst n)
+    (if (list? lst)
+      (if (null? lst)
+        (eopl:error 'nth-elt
+          "List is too short by ~s elements" (+ n 1)
+        (if (zero? n)
+          (car lst)
+          (nth-elt (cdr lst) (- n 1)))) 
+       eopl:error 'nth-elt
+        "Entered Type is not a List"))
+        
+        
+
+(define list-length
+  (lambda (lst)
+    (if (list? lst)
+      (if (null? lst)
+      0
+      (+ 1 (list-length (cdr lst))))
+      opl:error 'nth-elt
+        "Entered Type is not a List"))
 ```
 </details>
 
