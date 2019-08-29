@@ -142,7 +142,7 @@ This version of list-of-numbers? works properly only when it's argument is a lis
         #t
         (and
           (number? (car lst))
-          (list-of-numbers? (cdr lst))))#f))
+          (list-of-numbers? (cdr lst))))#f)))
         
 ```
 </details>
@@ -181,7 +181,27 @@ List-ref and length wll provide the proper, error checked answers
         "Entered Type is not a List"))
 ```
 </details>
+## Exercise 1.7 [*]
 
+The error message from nth-elt is uninformative. Rewrite nth-elt so that it produces a more informative error message, such as (a b c) does not contain an element 4." Hint: use letrec to create a local recursive procedure that does the real work.
+<details>
+<summary>Solution</summary>
+
+```
+(define nth-elt
+  lambda (lst n)
+      (if (null? lst)
+        (eopl:error 'nth-elt
+          "~s does not contain an element ~s" (lst) ()
+        (if (zero? n)
+          (car lst)
+          (nth-elt (cdr lst) (- n 1)))))
+      (define letrec
+        lambda(lst)
+          car lst + )
+          )
+```
+</details>
 ## Exercise 1.10 [*]
 In the last line of subst-in-symbol-expression, the recursion is on se
 and not a smaller substructure. Why is the recursion guaranteed to halt?
