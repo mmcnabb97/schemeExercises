@@ -158,27 +158,18 @@ Both will throw an error is given an improper type.
 List-ref and length wll provide the proper, error checked answers
 
 (define nth-elt
-  lambda (lst n)
-    (if (list? lst)
-      (if (null? lst)
-        (eopl:error 'nth-elt
-          "List is too short by ~s elements" (+ n 1)
-        (if (zero? n)
-          (car lst)
-          (nth-elt (cdr lst) (- n 1)))) 
-       eopl:error 'nth-elt
-        "Entered Type is not a List"))
-        
-        
-
+  (lambda (lst n)
+    (cond ((null? lst) (error 'nth-elt
+          "List is too short by ~s elements" (+ n 1)))
+          ((not (list? lst)) (error "lst not a list"))
+          ((zero? n) (car lst))
+          (else (nth-elt (cdr lst) (- n 1))))))
+          
 (define list-length
   (lambda (lst)
-    (if (list? lst)
-      (if (null? lst)
-      0
-      (+ 1 (list-length (cdr lst))))
-      opl:error 'nth-elt
-        "Entered Type is not a List"))
+    (cond ((null? lst) 0)
+          ((not (list? lst)) (error "lst not a list"))
+          (else (+ 1 (list-length (cdr lst)))))))
 ```
 </details>
 ## Exercise 1.7 [*]
@@ -189,22 +180,51 @@ The error message from nth-elt is uninformative. Rewrite nth-elt so that it prod
 
 ```
 (define nth-elt
-  lambda (lst n)
-      (if (null? lst)
-        (eopl:error 'nth-elt
-          "~s does not contain an element ~s" (lst) ()
-        (if (zero? n)
-          (car lst)
-          (nth-elt (cdr lst) (- n 1)))))
-      (define letrec
-        lambda(lst)
-          car lst + )
-          )
+  (lambda (lst n)
+    (letrec ((process-first
+               (lambda (rest i)
+                 (if (zero? i) (car rest)
+                     (process-rest (cdr rest) (- i 1)))))
+             (process-rest
+               (lambda (rest i)
+                 (if (null? rest)
+                     (begin
+                       (display lst)
+                       (display " does not have an element ")
+                       (display n)
+                       (newline))
+                     (process-first rest i)))))
+      (process-rest lst n))))
 ```
 </details>
+## Exercise 1.8 [*]
+In the definition of remove-first, if the inner if's alternative (cons ...) were replaced by (remove-first s (cdr los)), what function would the resulting procedure compute?
+<details>
+<summary>Solution</summary>
+
+```
+It would give the second instance of s or an empty list if s is not found.
+```
+</details>
+## Exercise 1.9 [*]
+In the definition of remove, if the inner if's alternative (cons ...) were replaced by (remove s (cdr los)), what function would the resulting procedure compute?
+<summary>Solution</summary>
+
+```
+It would give  an empty list.
+```
+</details>
+
 ## Exercise 1.10 [*]
 In the last line of subst-in-symbol-expression, the recursion is on se
 and not a smaller substructure. Why is the recursion guaranteed to halt?
+
+<summary>Solution</summary>
+
+```
+The result will be either empty or both null? and symbol? conditions will be met.
+```
+</details>
 
 ## Exercise 1.11 [*]  
 Eliminate the one call to `subst-in-symbol-expression` in `subst` by replacing
