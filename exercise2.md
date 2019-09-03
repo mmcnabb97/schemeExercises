@@ -146,6 +146,7 @@ This version of list-of-numbers? works properly only when it's argument is a lis
         
 ```
 </details>
+
 ## Exercise 1.6 [*]
 What happens if nth-elt and list-length are passed symbols when a list is expected? What is the behavior of list-ref and length  in such cases? Write robust versions of nth-elt and list-length.
 
@@ -172,6 +173,7 @@ List-ref and length wll provide the proper, error checked answers
           (else (+ 1 (list-length (cdr lst)))))))
 ```
 </details>
+
 ## Exercise 1.7 [*]
 
 The error message from nth-elt is uninformative. Rewrite nth-elt so that it produces a more informative error message, such as (a b c) does not contain an element 4." Hint: use letrec to create a local recursive procedure that does the real work.
@@ -206,6 +208,7 @@ In the definition of remove-first, if the inner if's alternative (cons ...) were
 It would give the second instance of s or an empty list if s is not found.
 ```
 </details>
+
 ## Exercise 1.9 [*]
 In the definition of remove, if the inner if's alternative (cons ...) were replaced by (remove s (cdr los)), what function would the resulting procedure compute?
 <summary>Solution</summary>
