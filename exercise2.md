@@ -715,19 +715,55 @@ foundl
 <summary>Solution</summary>
 
 ```
-(define path
-(lambda (n bst)
-(letrec ((finder
-(lambda (tree thepath)
-(cond ((null? tree) '())
-((= (car tree) n) thepath)
-(else (let ((foundl (finder (cadr tree)
-(append thepath '(left)))))
-(if (not (null? foundl))
-foundl
-(finder (caddr tree)
-(append thepath '(right))))))))))
-(finder bst '()))))
+- Uses filter-in from 1.15
+
+(define sort
+  (lambda (lon)
+    (define less
+      (lambda (n) (lambda (x) (< x n))))
+    (define greaterorequal
+      (lambda (n) (lambda (x) (>= x n))))
+    (if (null? lon)
+        '()
+        (append (sort (filter-in (less (car lon)) (cdr lon)))
+                (list (car lon))
+                (sort (filter-in (greaterorequal (car lon)) (cdr lon))))))
+```
+</details>
+
+3. 
+<details>
+<summary>Solution</summary>
+
+```
+(define sort
+  (lambda (predicate lon)
+    (define ispred
+      (lambda (pred n) (lambda (x) (pred x n))))
+    (define isnotpred
+      (lambda (pred n) (lambda (x) (not (pred x n)))))
+    (if (null? lon)
+        '()
+        (append (sort predicate (filter-in (ispred predicate (car lon))
+                                 (cdr lon)))
+                (list (car lon))
+                (sort predicate (filter-in (isnotpred predicate (car lon))
+                                 (cdr lon)))))))
+```
+</details>
+
+
+Exercise 1.18 [**]
+Solve the following exercises
+
+1. 
+<details>
+<summary>Solution</summary>
+
+```
+(define compose
+(lambda (p1 p2)
+(lambda (x) (p1 (p2 x)))))
 ```
 </details>
 
@@ -736,6 +772,77 @@ foundl
 <summary>Solution</summary>
 
 ```
+(define collect
+  (lambda (s slist errvalue col)
+    (cond ((null? slist) (col errvalue))
+          ((list? (car slist))
+           (let ((e (collect s (car slist) errvalue
+                             (lambda (seen)
+                               (col `(compose ,seen car))))))
+             (if (eqv? e errvalue)
+                 (collect s (cdr slist) errvalue
+                          (lambda (seen)
+                            (col `(compose ,seen cdr))))
+                 e)))
+          (else (if (eqv? s (car slist))
+                    (col 'car)
+                    (collect s (cdr slist) errvalue
+                             (lambda (seen)
+                               (if (eqv? seen errvalue)
+                                   errvalue
+                                   (col `(compose ,seen cdr))))))))))
 
+(define car&cdr
+  (lambda (s slist errvalue)
+    (define id
+      (lambda (x) x))
+    (collect s slist errvalue id)))
 ```
 </details>
+
+3. 
+<details>
+<summary>Solution</summary>
+
+```
+(define depth
+  (lambda (s slist)
+    (cond ((not (list? slist))
+           (list slist (list s)))
+          ((null? slist)
+           (list s))
+          ((null? (cdr slist))
+           (depth s (car slist)))
+          ((not (null? (cdr slist)))
+           (list (car slist)
+                 (depth s (cdr slist)))))))
+
+
+(define collect2
+  (lambda (s slist errvalue col)
+    (cond ((null? slist) (col errvalue))
+          ((list? (car slist))
+           (let ((e (collect2 s (car slist) errvalue
+                              (lambda (seen)
+                                (col (depth 'car seen))))))
+             (if (eqv? e errvalue)
+                 (collect2 s (cdr slist) errvalue
+                           (lambda (seen)
+                             (col (depth 'cdr seen))))
+                 e)))
+          (else (if (eqv? s (car slist))
+                    (col '(car))
+                    (collect2 s (cdr slist) errvalue
+                              (lambda (seen)
+                                (if (eqv? seen errvalue)
+                                    errvalue
+                                    (col (depth 'cdr seen))))))))))
+
+(define car&cdr2
+  (lambda (s slist errvalue)
+    (define identity
+      (lambda (x) x))
+    (collect2 s slist errvalue identity)))
+```
+</details>
+
