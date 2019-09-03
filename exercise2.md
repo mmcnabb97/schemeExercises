@@ -234,6 +234,22 @@ Eliminate the one call to `subst-in-symbol-expression` in `subst` by replacing
 it by its definition and simplifying the resulting procedure. The result will
 be a version of `subst` that does not need `subst-in-symbol-expression`. This
 technique is called inlining, and is used by optimizing compilers.
+<summary>Solution</summary>
+
+```
+(define subst
+  (lambda (new old slist)
+    (if (null? slist)
+        '()
+        (cons
+          ((lambda (new old se)
+             (if (symbol? se)
+                 (if (eqv? se old) new se)
+                 (subst new old se)))
+           new old (car slist))
+          (subst new old (cdr slist))))))
+```
+</details>
 
 ## Exercise 1.12 [**]
 In our example, we began by eliminating the Kleene star in the grammar for
@@ -277,7 +293,7 @@ Rewrite the grammar for `<s-list>` to use Kleene star, and rewrite
 <details>
 <summary>Solution</summary>
 
-```scheme
+```
 (define notate-depth
   (lambda (slist)
     (notate-depth-in-s-list slist 0)))
@@ -304,6 +320,28 @@ Rewrite the grammar for `<s-list>` to use Kleene star, and rewrite
 Exercise 1.14 [**]
 Given the assumption `0 ≤ n < length(von)`, prove that `partial-vector-sum` is
 correct.
+
+<details>
+<summary>Solution</summary>
+
+```
+IH(0) holds as it is trivally true. All elements in an empty vector always sum to 0.
+
+Assume IH(k), prove IH(k+1)
+By IH(k), we know 
+0+v[1]+v[2]+v[3]+...+v[k] = a
+where a is the sum of the first k elements in vector v.
+Since v is not empty, we know the sum of the k+1 is given by
+0+v[1]+v[2]+v[3]+v[4]+...+v[k+1]
+This can be furthur expanded to
+0+v[1]+v[2]+v[3]+v[4]+...+v[k] + v[k+1]
+We can then substitute a in
+a+ v[k+1]
+This means that the partial-vector-sum of the elements up to k+1 is the sum of the elements up to k plus k+1.
+This completes our proof.
+
+```
+</details>
 
 Exercise 1.15 [*]
 Define, test, and debug the following procedures. Assume that `s` is any symbol,
@@ -555,3 +593,149 @@ and `append`.
 > (vector-append-list '#(1 2 3) '(4 5))
 #(1 2 3 4 5)
 ```
+
+Exercise 1.16 [**]
+Solve the following exercises
+
+1. 
+<details>
+<summary>Solution</summary>
+
+```
+(define up
+  (lambda (lst)
+    (cond ((null? lst)
+           '())
+          ((list? (car lst))
+           (append (car lst) (up (cdr lst))))
+          (else (cons (car lst) (up (cdr lst)))))))
+```
+</details>
+
+2. 
+<details>
+<summary>Solution</summary>
+
+```
+(define swapper
+  (lambda (s1 s2 slist)
+    (cond ((null? slist)
+           '())
+          ((list? (car slist))
+           (cons (swapper s1 s2 (car slist))
+                 (swapper s1 s2 (cdr slist))))
+          ((eq? s1 (car slist))
+           (cons s2
+                 (swapper s1 s2 (cdr slist))))
+          ((eq? s2 (car slist))
+           (cons s1
+                 (swapper s1 s2 (cdr slist))))
+          (else (cons (car slist)
+                      (swapper s1 s2 (cdr slist)))))))
+```
+</details>
+
+3. 
+<details>
+<summary>Solution</summary>
+
+```
+(define count-occurrences
+(lambda (s slist)
+(cond ((null? slist) 0)
+((list? (car slist))
+(+ (count-occurrences s (car slist))
+(count-occurrences s (cdr slist))))
+((eqv? s (car slist))
+(+ 1 (count-occurrences s (cdr slist))))
+(else (count-occurrences s (cdr slist))))))
+```
+</details>
+
+4. 
+<details>
+<summary>Solution</summary>
+
+```
+(define flatten
+  (lambda (slist)
+    (cond ((null? slist) '())
+          ((null? (car slist)) (flatten (cdr slist)))
+          ((list? (car slist))
+           (append (flatten (car slist))
+                   (flatten (cdr slist))))
+          (else (cons (car slist)
+                      (flatten (cdr slist)))))))
+```
+</details>
+
+5.
+<details>
+<summary>Solution</summary>
+
+```
+(define merge
+  (lambda (lon1 lon2)
+    (cond ((null? lon1) lon2)
+          ((null? lon2) lon1)
+          ((<= (car lon1) (car lon2))
+           (cons (car lon1)
+                 (merge (cdr lon1) lon2)))
+          (else (cons (car lon2)
+                      (merge lon1 (cdr lon2)))))))
+```
+</details>
+
+Exercise 1.17 [**]
+Solve the following exercises
+
+1. 
+<details>
+<summary>Solution</summary>
+
+```
+(define path
+(lambda (n bst)
+(letrec ((finder
+(lambda (tree thepath)
+(cond ((null? tree) '())
+((= (car tree) n) thepath)
+(else (let ((foundl (finder (cadr tree)
+(append thepath '(left)))))
+(if (not (null? foundl))
+foundl
+(finder (caddr tree)
+(append thepath '(right))))))))))
+(finder bst '()))))
+```
+</details>
+
+2. 
+<details>
+<summary>Solution</summary>
+
+```
+(define path
+(lambda (n bst)
+(letrec ((finder
+(lambda (tree thepath)
+(cond ((null? tree) '())
+((= (car tree) n) thepath)
+(else (let ((foundl (finder (cadr tree)
+(append thepath '(left)))))
+(if (not (null? foundl))
+foundl
+(finder (caddr tree)
+(append thepath '(right))))))))))
+(finder bst '()))))
+```
+</details>
+
+2. 
+<details>
+<summary>Solution</summary>
+
+```
+
+```
+</details>
