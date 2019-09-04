@@ -846,3 +846,111 @@ Solve the following exercises
 ```
 </details>
 
+## Exercise 1.19 [*]
+
+Write a procedure free-vars that takes a list structure representing an expression in lambda calculus syntax given above and return a set z9a list without duplicates) of all the variables that occcur free in the expression. Similarly,write a procedure bound-vars that returns a set of all variables that occur bound in its argument.
+<details>
+<summary>Solution</summary>
+
+```
+-Using occurs-free and occurs-bound which appear on page 32
+
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) (eqv? var exp))
+      ((eqv? (car exp) 'lambda)
+       (and (not (eqv? (caadr exp) var))
+            (occurs-free? var (caddr exp))))
+      (else (or (occurs-free? var (car exp))
+                (occurs-free? var (cadr exp)))))))
+
+(define extractvari
+  (lambda (exp)
+    (define collector
+      (lambda (exp vars)
+        (cond ((symbol? exp)
+               (if (not (memq exp vars))
+                   (cons exp vars)))
+              ((eqv? (car exp) 'lambda)
+               (collector (caddr exp) vars))
+              (else (append (collector (car exp) vars)
+                            (collector (cadr exp) vars))))))
+    (collector exp '())))
+
+(define free-vars
+  (lambda (exp)
+    (filter-in (lambda (var)
+                 (occurs-free? var exp))
+               (extractvari exp))))
+               
+               
+(define occurs-bound?
+(lambda (var exp)
+    (cond
+      ((symbol? exp) #f)
+      ((eqv? (car exp) 'lambda)
+       (or (occurs-bound? var (caddr exp))
+           (and (eqv? (caadr exp) var)
+                (occurs-free? var (caddr exp)))))
+      (else (or (occurs-bound? var (car exp))
+                (occurs-bound? var (cadr exp)))))))
+                
+ (define bound-vars
+   (lambda (exp)
+    (filter-in (lambda (var)
+                 (occurs-bound? var exp))
+               (extractvari exp))))
+```
+</details>
+
+## Exercise 1.20 [*]
+
+Give an example of a lambda calculus expression in which a variable occurs free but which has a value that is independent of the value of the free variable.
+
+<details>
+<summary>Solution</summary>
+
+```
+((lambda (x) y) z)
+```
+</details>
+
+## Exercise 1.21 [*]
+
+GIve an exampl of  a  lambda calculus expression where the same variable occurs both bound and unbound.
+
+<details>
+<summary>Solution</summary>
+
+```
+((lambda (x) x) x)
+```
+</details>
+
+## Exercise 1.22 [*]
+
+Scheme lambda expressions may have any number of formal paramenters, and scheme procedure calls may have any number of operands. Modify the formal definitions of occurs free and occur bound to allow lambda expressions with any number of formal parameters and procedure calls  with any number of operands. Then modify the procedures occurs-free and occurs-bound to follow these new definitions.
+
+<details>
+<summary>Solution</summary>
+
+```
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is a variable reference and E is identical to x
+OR
+2. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+3. E is of the form (E1 E2) and x is a component and free in E1 or in E2
+
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) (eqv? var exp))
+      ((eqv? (car exp) 'lambda)
+       (and (not (memq var (cadr exp)))    
+            (occurs-free? var (caddr exp))))
+      (else (or (occurs-free? var (car exp))
+                (occurs-free? var (cadr exp)))))))
+```
+</details>
