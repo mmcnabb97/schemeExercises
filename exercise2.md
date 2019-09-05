@@ -1075,3 +1075,154 @@ OR
 ```
 </details>
 
+## Exercise 1.26 [*]
+
+Extend the formal definitions of occurs free and occurs bound to include scheme assignment (set!) expressions.
+<details>
+<summary>Solution</summary>
+
+```
+(set!) does not actually bind or free anything. It only alters previous bindings. Therefore, the previous formal definition is still sufficently valid.
+
+A variable x occurs free in a lambda calculus expression E if and only if
+1. E is a variable reference and E is identical to x
+OR
+2. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+3. E is of the form (E1 E2) and x is a component and free in E1 or in E2
+OR
+4. E is of the form (if E1 E2 E3) and x is a component and free in E1 or in E2 or in E3
+OR
+5. E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+6. E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+7.E is of the form (quote E1) and x is a component and free in E1
+
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+2. E is of the form (E1 E2) and x is a component and bound in E1 or in E2
+OR
+3. E is of the form (if E1 E2 E3) and x is a component and bound in E1 or in E2 or in E3
+OR 
+4.E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+5.E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x occurs bound in E or x is equal to any y and x occurs free in E'
+6. E is of the form (quote E1) and x is a component and bound in E1
+
+
+```
+</details>
+
+## Exercise 1.27 [*]
+
+In the following expressions, draw an arrow from each variable reference to its associated formal parameter declaration.
+
+<details>
+<summary>Solution</summary>
+
+```
+See Uploaded Files
+```
+</details>
+
+## Exercise 1.28 [*]
+
+Repeat the above exercise with programs written in a block structure language other than Scheme
+
+<details>
+<summary>Solution</summary>
+
+```
+See Uploaded Files
+```
+</details>
+
+## Exercise 1.29 [*]
+
+What is wrong with the following lexical-address expression?
+(lambda (a)
+  (lambda (a)
+    (a : 1 0)))
+
+<details>
+<summary>Solution</summary>
+
+```
+The address would default to the closest declaration. Therefore the correct expression would be
+(lambda (a)
+  (lambda (a)
+    (a : 0 0)))
+Since the a is in the first position down from a lambda (a)
+
+```
+</details>
+
+## Exercise 1.30 [*]
+
+Write a scheme expression that is equivalent to the following lexical-address expression from which variable names have been removed.
+(lambda 1
+  (lambda 1
+    (: 1 0)))
+<details>
+<summary>Solution</summary>
+
+```
+(lambda(x)
+  (lambda(y)
+    (x))
+
+```
+</details>
+
+## Exercise 1.31 [*]
+
+Write a procedure lexical-address that takes aany express and returns the expression with every variable reference v replaced by a list (v: d p), as above. If variable reference v is free, produce the list (v free) instead.
+
+<details>
+<summary>Solution</summary>
+
+```
+(define setaddress
+  (lambda (v d p)
+    (list v ': d p))
+    
+ (define getvar
+  (lambda (address)
+    (car address)))
+    
+(define getdep
+  (lambda (address)
+    (caddr address)))
+
+(define getpos
+  (lambda (address)
+    (cadddr address)))
+
+(define incrdep
+  (lambda (address)
+    (setaddress (getvar address)
+                          (+ 1 (getdep address))
+                          (getpos address)))
+
+(define getaddress
+  (lambda (exp addresses)
+    (define iter
+      (lambda (lst)
+        (cond ((null? lst) (list exp 'free))
+              ((eqv? exp (getvar (car lst))) (car lst))
+              (else (getaddress exp (cdr lst))))))
+    (iter addresses)))
+
+(define index
+  (lambda (v declarations)
+    (define helper
+      (lambda (lst ind)
+        (cond ((null? lst) 'free)
+              ((eqv? (car lst) v) ind)
+              (else (helper (cdr lst) (+ ind 1))))))
+    (helper declarations 0)))
+
+```
+</details>
