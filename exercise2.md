@@ -952,5 +952,126 @@ OR
             (occurs-free? var (caddr exp))))
       (else (or (occurs-free? var (car exp))
                 (occurs-free? var (cadr exp)))))))
+                
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+2. E is of the form (E1 E2) and x is a component and bound in E1 or in E2
+
+(define occurs-bound?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) #f)
+      ((eqv? (car exp) 'lambda)
+       (or (occurs-bound? var (caddr exp))
+           (and (memq var (cadr exp))
+                (occurs-free? var (caddr exp)))))
+      (else (or (occurs-bound? var (car exp))
+                (occurs-bound? var (cadr exp)))))))
 ```
 </details>
+
+## Exercise 1.23 [*]
+
+Extend the formal definitions of occurs free and occurs bound to include if statements
+
+<details>
+<summary>Solution</summary>
+
+```
+A variable x occurs free in a lambda calculus expression E if and only if
+1. E is a variable reference and E is identical to x
+OR
+2. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+3. E is of the form (E1 E2) and x is a component and free in E1 or in E2
+OR
+4. E is of the form (if E1 E2 E3) and x is a component and free in E1 or in E2 or in E3
+
+
+
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+2. E is of the form (E1 E2) and x is a component and bound in E1 or in E2
+OR
+3. E is of the form (if E1 E2 E3) and x is a component and bound in E1 or in E2 or in E3
+
+```
+</details>
+
+## Exercise 1.24 [*]
+
+Extend the formal definitions of occurs free and occurs bound to include let and let* expressions
+
+<details>
+<summary>Solution</summary>
+
+```
+A variable x occurs free in a lambda calculus expression E if and only if
+1. E is a variable reference and E is identical to x
+OR
+2. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+3. E is of the form (E1 E2) and x is a component and free in E1 or in E2
+OR
+4. E is of the form (if E1 E2 E3) and x is a component and free in E1 or in E2 or in E3
+OR
+5. E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+6. E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x is distinct from every y, and x occurs free in E'
+
+
+
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+2. E is of the form (E1 E2) and x is a component and bound in E1 or in E2
+OR
+3. E is of the form (if E1 E2 E3) and x is a component and bound in E1 or in E2 or in E3
+OR 
+4.E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+5.E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x occurs bound in E or x is equal to any y and x occurs free in E'
+```
+</details>
+
+## Exercise 1.25 [*]
+
+Extend the formal definitions of occurs free and occurs bound to include scheme quotations ( expressions of the form (quote [datum]))
+
+<details>
+<summary>Solution</summary>
+
+```
+A variable x occurs free in a lambda calculus expression E if and only if
+1. E is a variable reference and E is identical to x
+OR
+2. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+3. E is of the form (E1 E2) and x is a component and free in E1 or in E2
+OR
+4. E is of the form (if E1 E2 E3) and x is a component and free in E1 or in E2 or in E3
+OR
+5. E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+6. E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x is distinct from every y, and x occurs free in E'
+OR
+7.E is of the form (quote E1) and x is a component and free in E1
+
+A variable x occurs free in a lambda calculus expression E if and only if:
+1. E is of the form (lambda (y1 y2 y3... yn) E'), where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+2. E is of the form (E1 E2) and x is a component and bound in E1 or in E2
+OR
+3. E is of the form (if E1 E2 E3) and x is a component and bound in E1 or in E2 or in E3
+OR 
+4.E is of the form (let [y1 s1] [y2 s2]...[yn sn], where n > 0 and x occurs bound in E or x is equal to any y and x  occurs free in E'
+OR
+5.E is of the form (let* [y1 (list s1)] [y2 (cons s2 y1)]...[yn (cons sn yn-1)], where n > 0 and x occurs bound in E or x is equal to any y and x occurs free in E'
+6. E is of the form (quote E1) and x is a component and bound in E1
+
+
+```
+</details>
+
