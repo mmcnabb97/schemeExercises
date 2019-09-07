@@ -1186,7 +1186,7 @@ Write a procedure lexical-address that takes aany express and returns the expres
 ```
 (define setaddress
   (lambda (v d p)
-    (list v ': d p))
+    (list v ': d p)))
     
  (define getvar
   (lambda (address)
@@ -1204,7 +1204,7 @@ Write a procedure lexical-address that takes aany express and returns the expres
   (lambda (address)
     (setaddress (getvar address)
                           (+ 1 (getdep address))
-                          (getpos address)))
+                          (getpos address))))
 
 (define getaddress
   (lambda (exp addresses)
@@ -1223,6 +1223,53 @@ Write a procedure lexical-address that takes aany express and returns the expres
               ((eqv? (car lst) v) ind)
               (else (helper (cdr lst) (+ ind 1))))))
     (helper declarations 0)))
+    
+(define app
+  (lambda (declarations addresses)
+    (let ((bound (filterbound declarations))
+          (free (filterfree declarations addresses)))
+      (append bound free))))
 
+(define filterbound
+  (lambda (declarations)
+    (map (lambda (decl)
+           (getaddress decl
+                                 0
+                                 (index decl declarations)))
+         declarations)))
+         
+(define filterfree
+  (lambda (declarations addresses)
+    (define iter
+      (lambda (lst)
+        (cond ((null? lst) '())
+              ((not (memq (getvar (car lst)) declarations))
+               (cons (incrdep (car lst))
+                     (iter (cdr lst))))
+              (else (iter (cdr lst))))))
+    (iter addresses)))
+
+(define translateLE
+  (lambda (exp addresses)
+    (cond ((symbol? exp)
+           (get-lexical-address exp addresses))
+          ((eqv? (car exp) 'if)
+           (list 'if
+                 (translateLE (cadr exp) addresses)
+                 (translateLE (caddr exp) addresses)
+                 (translateLE (cadddr exp) addresses)))
+          ((eqv? (car exp) 'lambda)
+           (list 'lambda
+                 (cadr exp)
+                 (translateLE (caddr exp)
+                                         (app (cadr exp) addresses))))
+          (else (map (lambda (subexp)
+                       (translateLE subexp addresses))
+                     exp)))))
+                     
+(define lexical-address
+  (lambda (exp)
+    (translateLE exp '())))
 ```
 </details>
+
