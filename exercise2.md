@@ -1273,3 +1273,53 @@ Write a procedure lexical-address that takes aany express and returns the expres
 ```
 </details>
 
+## Exercise 1.32 [*]
+
+Write a procedure un-lexical-address that, which takes lexical address expressions with formal parameter lists and variable references of the form (: d p), or (v free) and returns an equivalent expression formed by substituting standard variable references for the lexical -address information, or #f if no expression exists.
+<details>
+<summary>Solution</summary>
+
+```
+(define getnvar
+  (lambda (exp addresses)
+    (cond ((eqv? 'free (cadr exp))
+    (car exp))
+    ((null? addresses) #f)
+    ((and (eqv? (cadr exp) (getdep (car addresses)))
+     (eqv? (caddr exp) (getpos (car addresses))))
+     (getvar(car addresses)))
+     (else (getnvar exp (cdr addresses))))))
+
+(define reference? 
+  (lambda (exp)
+  (eqv? ': (car exp))))
+
+(define translateULE
+  (lambda (exp addresses)
+    (cond ((reference? exp)
+           (get-variable exp addresses))
+          ((eqv? (car exp) 'if)
+           (let ((condi (translateULE (cadr exp) addresses))
+                 (conse (translateULE (caddr exp) addresses))
+                 (alter (translateULE (cadddr exp) addresses)))
+             (if (or (not condition) (not consequent) (not alter))
+                 #f
+                 (list 'if condi conse alter))))
+          ((eqv? (car exp) 'lambda)
+           (let ((lbody (translateULE (caddr exp)
+                                                         (app (cadr exp) addresses))))
+             (if (not lbody)
+                 #f
+                 (list 'lambda
+                       (cadr exp)
+                       lbody))))
+          (else (map (lambda (subexp)
+                       (translateULE subexp addresses))
+                     exp)))))
+
+(define un-lexical-address
+  (lambda (exp)
+    (translateULE exp '())))
+
+```
+</details>
