@@ -1300,11 +1300,11 @@ Write a procedure un-lexical-address that, which takes lexical address expressio
            (get-variable exp addresses))
           ((eqv? (car exp) 'if)
            (let ((condi (translateULE (cadr exp) addresses))
-                 (conse (translateULE (caddr exp) addresses))
-                 (alter (translateULE (cadddr exp) addresses)))
-             (if (or (not condition) (not consequent) (not alter))
+                 (ifi (translateULE (caddr exp) addresses))
+                 (elsei (translateULE (cadddr exp) addresses)))
+             (if (or (not condi) (not ifi) (not elsei))
                  #f
-                 (list 'if condi conse alter))))
+                 (list 'if condi ifi elsei))))
           ((eqv? (car exp) 'lambda)
            (let ((lbody (translateULE (caddr exp)
                                                          (app (cadr exp) addresses))))
@@ -1320,6 +1320,50 @@ Write a procedure un-lexical-address that, which takes lexical address expressio
 (define un-lexical-address
   (lambda (exp)
     (translateULE exp '())))
+
+```
+</details>
+
+## Exercise 1.33 [*]
+Some Languages do not allow an inner declaration to declare a variable already declared in an outer declaration. Write a procedure that takes a lambda calculus expression and checks to see if it contains such a redeclaration.
+
+<details>
+<summary>Solution</summary>
+```
+(define already-declared?
+  (lambda (new declar)
+    (cond ((null? new) #f)
+          ((memq (car new) declar) #t)
+          (else (already-declared? (cdr new) declar)))))
+
+
+(define check-interior
+  (lambda (inter declar)
+    (cond ((null? inter) #t)
+          ((not (check-declarations-helper (car inter) declar)) #f)
+          (else (check-interior (cdr inter) declar)))))
+
+(define check-declarations-helper
+  (lambda (exp declarations)
+    (cond ((symbol? exp) #t)
+          ((eqv? (car exp) 'if)
+           (let ((condi (check-declarations-helper (cadr exp) declarations))
+                 (ifi (check-declarations-helper (caddr exp) declarations))
+                 (elsei (check-declarations-helper (cadddr exp) declarations)))
+             (and condi ifi elsei)))
+          ((eqv? (car exp) 'lambda)
+           (if (already-declared? (cadr exp) declarations)
+               #f
+               (check-declarations-helper (caddr exp) (append (cadr exp) declarations))))
+          (else (check-interior exp declarations)))))
+
+
+(define check-declarations
+  (lambda (exp)
+    (let ((approved (check-declarations-helper exp '())))
+      (if (not approved)
+          (display "Error: Already declared variables")
+          (display "It is approved"))))
 
 ```
 </details>
