@@ -82,6 +82,6 @@ Unary representation: It succeeds in representing all nonnegative but is more li
 
 Scheme number representation: It contains full access to operations one would want on all nonnegative integers. It cannot though handle operations that are centered on a base besides base 10 (i.e. bitshift, xor)
 
-Bignum representation: Can represent all nonnegative 
+Bignum representation: Can represent all nonnegative integers and can handle a variety of bases. Many mathamatic operations are not applicable without conversion to another form (i.e. exponentials, non-bitshift division).
 ```
 </details>
