@@ -68,3 +68,20 @@ Implement the four required operations for bigits. Then use it to calculate the 
   I found no noticable differences in run time as base increased.
 ```
 </details>
+
+
+
+## Exercise 2.2 [*]
+
+Analyze each of these proposed representations critically. To what extent do they suceed or fail in satifying the specification of the data type.
+<details>
+<summary>Solution</summary>
+
+```
+Unary representation: It succeeds in representing all nonnegative but is more limited in terms of the operations that can be done in it. Many mathamatic operations are not applicable without conversion to another form (i.e. exponentials, division).
+
+Scheme number representation: It contains full access to operations one would want on all nonnegative integers. It cannot though handle operations that are centered on a base besides base 10 (i.e. bitshift, xor)
+
+Bignum representation: Can represent all nonnegative 
+```
+</details>
