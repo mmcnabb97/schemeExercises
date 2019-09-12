@@ -85,3 +85,25 @@ Scheme number representation: It contains full access to operations one would wa
 Bignum representation: Can represent all nonnegative integers and can handle a variety of bases. Many mathamatic operations are not applicable without conversion to another form (i.e. exponentials, non-bitshift division).
 ```
 </details>
+
+## Exercise 2.3 [*]
+
+Implement vector-of, which is like list-of, butworks for vectors instead of lists. DO this without using vector->list
+<details>
+<summary>Solution</summary>
+
+```
+(define (vector-of pred val)
+  (vector? val)
+           (vector-iter val pred))
+
+(define (vector-iter vector pred)
+        (iter-helper vector 0 pred))
+
+
+  (define (iter-helper v i pred)
+            (cond ((= i (vector-length v)) #t)
+                  ((not (pred (vector-ref v i))) #f)
+                  (else (iter-helper v (+ i 1) pred))))
+```
+</details>
