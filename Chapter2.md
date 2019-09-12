@@ -107,3 +107,71 @@ Implement vector-of, which is like list-of, butworks for vectors instead of list
                   (else (iter-helper v (+ i 1) pred))))
 ```
 </details>
+
+## Exercise 2.4 [*]
+
+Implement a bintree-to-list procedure for binary trees, so that (bintree-to-list (interior-node 'a (leaf-node 3) (leaf-node 4))) returns the list
+(interior-node
+  a
+  (leaf-node 3)
+  (leaf-node 4))
+  
+<details>
+<summary>Solution</summary>
+
+```
+(define-datatype bintree bintree?
+  (leaf-node
+   (datum number?))
+  (interior-node
+   (key symbol?)
+   (left bintree?)
+   (right bintree?)))
+
+(define leaf-sum
+  (lambda (tree)
+    (cases bintree tree
+      (leaf-node (datum) datum)
+      (interior-node (key left right)
+                     (+ (leaf-sum left) (leaf-sum right))))))
+
+(define (bintree-to-list tree)
+    (cases bintree tree
+           (leaf-node (datum) (list 'leaf-node datum))
+           (interior-node (key left right)
+                          (list 'interior-node
+                                key
+                                (bintree-to-list left)
+                                (bintree-to-list right)))))
+```
+</details>
+
+## Exercise 2.5 [*]
+
+Use cases to write max-interior, which takes a binary tree of numbers with atleast one interior node and returns the symbol associated with an interior node with maximal leaf sum.
+<details>
+<summary>Solution</summary>
+
+```
+(define (prune tree)
+  (cases bintree tree
+    (leaf-node (datum) '())
+    (interior-node (key left right)
+                   (let ((sum (leaf-sum tree)))
+                         (append (list (list key sum))
+                                 (prune left)
+                                 (prune right))))))
+
+(define (find-max leaf-nums)
+    (find-max-helper leaf-nums (car leaf-nums)))
+
+(define (find-max-helper lst max)
+        (cond ((null? lst) max)
+              ((> (cadar lst) (cadr max))
+               (find-max-helper (cdr lst) (car lst)))
+              (else (find-max-helper (cdr lst) max))))
+
+(define (max-interior tree)
+    (car (find-max (prune tree))))
+```
+</details>
