@@ -175,3 +175,15 @@ Use cases to write max-interior, which takes a binary tree of numbers with atlea
     (car (find-max (prune tree))))
 ```
 </details>
+
+## Exercise 2.5 [*]
+
+Draw the abstract syntax tree for the mambda calculus expression 
+((lambda (a) (a b)) c)
+<details>
+<summary>Solution</summary>
+
+```
+See attached files
+```
+</details>
