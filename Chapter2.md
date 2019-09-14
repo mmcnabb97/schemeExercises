@@ -176,7 +176,7 @@ Use cases to write max-interior, which takes a binary tree of numbers with atlea
 ```
 </details>
 
-## Exercise 2.5 [*]
+## Exercise 2.6 [*]
 
 Draw the abstract syntax tree for the mambda calculus expression 
 ((lambda (a) (a b)) c)
@@ -185,5 +185,214 @@ Draw the abstract syntax tree for the mambda calculus expression
 
 ```
 See attached files
+```
+</details>
+
+## Exercise 2.7 [*]
+
+Define the data type and parse and unparse procedures for the above grammar. Then implement lexical address of exercise 1.31 using abstract syntax.
+<details>
+<summary>Solution</summary>
+
+```
+(define-datatype expression expression?
+                 (lit-exp
+                   (datum number?))
+                 (var-exp
+                   (id symbol?))
+                 (if-exp
+                   (test-exp expression?)
+                   (true-exp expression?)
+                   (false-exp expression?))
+                 (lambda-exp
+                   (ids (list-of symbol?))
+                   (body expression?))
+                 (app-exp
+                   (rator expression?)
+                   (rands (list-of expression?))))
+
+(define (parse-expression datum)
+    (cond
+      ((number? datum) (lit-exp datum))
+      ((symbol? datum) (var-exp datum))
+      ((list? datum)
+       (cond ((eqv? (car datum) 'if)
+              (if-exp (parse-expression (cadr datum))
+                      (parse-expression (caddr datum))
+                      (parse-expression (cadddr datum))))
+             ((eqv? (car datum) 'lambda)
+              (lambda-exp (cadr datum)
+                          (parse-expression (caddr datum))))
+             (else
+              (app-exp
+                (parse-expression (car datum))
+                (map (lambda (exp)
+                       (parse-expression exp))
+                     (cdr datum))))))
+       (else (eopl:error 'parse-expression
+              "Invalid concrete syntax ~s" datum))))
+
+(define (unparse-expression exp)
+    (cases expression exp
+           (lit-exp (datum) datum)
+           (var-exp (id) id)
+           (if-exp (test-exp true-exp false-exp)
+                   (list 'if (unparse-expression test-exp)
+                         (unparse-expression true-exp)
+                         (unparse-expression false-exp)))
+           (lambda-exp (ids body)
+                       (list 'lambda
+                             ids
+                             (unparse-expression body)))
+           (app-exp (rator rands)
+                    (append (list (unparse-expression rator))
+                            (map (lambda (rand)
+                                   (unparse-expression rand))
+                                 rands)))))
+                                 
+ 
+ 
+ 
+ 
+ 
+ (define-datatype expression expression?
+                 (lex-info
+                   (id symbol?)
+                   (sep (lambda (sep) (eqv? sep ':)))
+                   (depth number?)
+                   (position number?))
+                 (free-info
+                   (id symbol?))
+                 (if-exp
+                   (test-exp expression?)
+                   (true-exp expression?)
+                   (false-exp expression?))
+                 (lambda-exp
+                   (ids (list-of symbol?))
+                   (body expression?))
+                 (app-exp
+                   (rator expression?)
+                   (rands (list-of expression?))))
+
+(define (unparse-expression exp)
+    (cases expression exp
+           (lex-info (id sep depth position) id)
+           (free-info (id) id)
+           (if-exp (test-exp true-exp false-exp)
+                   (list 'if
+                         (unparse-expression test-exp)
+                         (unparse-expression true-exp)
+                         (unparse-expression false-exp)))
+           (lambda-exp (ids body)
+                       (list 'lambda
+                             ids
+                             (unparse-expression body)))
+           (app-exp (rator rands)
+                    (append (list (unparse-expression rator))
+                            (map (lambda (rand)
+                                   (unparse-expression rand))
+                                 rands)))))
+```
+</details>
+
+## Exercise 2.8 [*]
+
+Rewrite the solution to exercise 1.19 using abstract syntax . Then compare this version to the original solution.
+<details>
+<summary>Solution</summary>
+
+```
+(define-datatype expression expression?
+                 (var-exp
+                   (id symbol?))
+                 (lambda-exp
+                   (ids (list-of symbol?))
+                   (body expression?))
+                 (app-exp
+                   (rator expression?)
+                   (rands (list-of expression?))))
+
+(define occurs-free?
+  (lambda (var exp)
+    (cond
+      ((symbol? exp) (eqv? var exp))
+      ((eqv? (car exp) 'lambda)
+       (and (not (eqv? (caadr exp) var))
+            (occurs-free? var (caddr exp))))
+      (else (or (occurs-free? var (car exp))
+                (occurs-free? var (cadr exp)))))))
+
+(define parse-expression
+  (lambda (datum)
+    (cond
+      ((symbol? datum) (var-exp datum))
+      ((pair? datum)
+       (cond ((eqv? (car datum) 'if))
+             ((eqv? (car datum) 'lambda)
+              (lambda-exp (cadr datum)
+                          (parse-expression (caddr datum))))
+             (else
+              (app-exp
+                (parse-expression (car datum))
+                (map (lambda (exp)
+                       (parse-expression exp))
+                     (cdr datum))))))
+       (else (eopl:error 'parse-expression
+              "Invalid concrete syntax ~s" datum)))))
+
+(define (remove-duplicates lst)
+    (cond ((null? lst) '())
+          ((memv (car lst) (cdr lst))
+           (remove-duplicates (cdr lst)))
+          (else (cons (car lst)
+                      (remove-duplicates (cdr lst))))))
+
+(define (free-vars exp)
+    (let ((ast (parse-expression exp)))
+      (define free-vars-iter
+        (lambda (subexp)
+          (cases expression subexp
+                 (var-exp (id)
+                          (if (occurs-free? id ast)
+                              (list id)
+                              '()))
+                 (lambda-exp (id body)
+                             (if (occurs-free? id ast)
+                                 (append (list id)
+                                         (free-vars-iter body))
+                                 (free-vars-iter body)))
+                 (app-exp (rator rand)
+                          (append (free-vars-iter rator)
+                                  (free-vars-iter rand))))))
+      (remove-duplicates (free-vars-iter ast))))
+
+(define (occurs-bound? var exp)
+    (cases expression exp
+           (var-exp (id) #f)
+           (lambda-exp (id body)
+                       (or (occurs-bound? var body)
+                           (and (eqv? id var)
+                                (occurs-free? var body))))
+           (app-exp (rator rand)
+                    (or (occurs-bound? var rator)
+                        (occurs-bound? var rand)))))
+
+(define (bound-vars exp)
+    (let ((ast (parse-expression exp)))
+      (define (bound-vars-iter subexp)
+          (cases expression subexp
+                 (var-exp (id)
+                          (if (occurs-bound? id ast)
+                              (list id)
+                              '()))
+                 (lambda-exp (id body)
+                             (if (occurs-bound? id ast)
+                                 (append (list id)
+                                         (bound-vars-iter body))
+                                 (bound-vars-iter body)))
+                 (app-exp (rator rand)
+                          (append (bound-vars-iter rator)
+                                  (bound-vars-iter rand)))))
+      (remove-duplicates (bound-vars-iter ast))))
 ```
 </details>
