@@ -322,11 +322,10 @@ Rewrite the solution to exercise 1.19 using abstract syntax . Then compare this 
       (else (or (occurs-free? var (car exp))
                 (occurs-free? var (cadr exp)))))))
 
-(define parse-expression
-  (lambda (datum)
+(define (parse-expression datum)
     (cond
       ((symbol? datum) (var-exp datum))
-      ((pair? datum)
+      ((list? datum)
        (cond ((eqv? (car datum) 'if))
              ((eqv? (car datum) 'lambda)
               (lambda-exp (cadr datum)
@@ -338,7 +337,7 @@ Rewrite the solution to exercise 1.19 using abstract syntax . Then compare this 
                        (parse-expression exp))
                      (cdr datum))))))
        (else (eopl:error 'parse-expression
-              "Invalid concrete syntax ~s" datum)))))
+              "Invalid concrete syntax ~s" datum))))
 
 (define (remove-duplicates lst)
     (cond ((null? lst) '())
@@ -396,3 +395,87 @@ Rewrite the solution to exercise 1.19 using abstract syntax . Then compare this 
       (remove-duplicates (bound-vars-iter ast))))
 ```
 </details>
+
+
+## Exercise 2.9 [*]
+
+The procedure parse expression is fragile: it does not detect several possible syntactic errors, such as (a b c), and aborts with inappropriate error messages for other errors such as (lambda). Modify it so that it is robust, accepting any datum and issuing an appropriate error ,message if the datum does not represent a lambda calculus expression
+
+<details>
+<summary>Solution</summary>
+
+```
+(define (parse-expression datum)
+    (cond
+      ((symbol? datum) (var-exp datum))
+      ((list datum)
+       (if (eqv? (car datum) 'lambda)
+           (begin
+             (tester (= (length datum) 3)
+                     "Invalid lambda expression ~s"
+                     datum)
+             (lambda-exp (caadr datum)
+                         (parse-expression (caddr datum))))
+           (begin
+             (tester (= (length datum) 2)
+                     "Invalid procedure application ~s"
+                     datum)
+             (app-exp
+               (parse-expression (car datum))
+               (parse-expression (cadr datum))))))
+      (else (eopl:error 'parse-expression
+                        "Invalid concrete syntax ~s" datum))))
+                        
+(define tester
+  (lambda (test msg datum)
+    (if (not test)
+        (eopl:error 'parse-expression msg datum) '#t)))
+```
+</details>
+
+## Exercise 2.10 [*]
+
+Implement fresh-id by defining all-ids, which finds all the symbols in an expression. This includes the free occurences, the bound occurences, and the lambda identifiers for which there are no bound occurences.
+<details>
+<summary>Solution</summary>
+
+```
+(define-datatype expression expression?
+                 (var-exp
+                   (id symbol?))
+                 (lambda-exp
+                   (ids (list-of symbol?))
+                   (body expression?))
+                 (app-exp
+                   (rator expression?)
+                   (rands (list-of expression?))))
+
+
+(define (all-ids exp)
+    (all-ids-iter exp '()))
+
+(define (all-ids-iter exp ids)
+        (cases expression exp
+               (var-exp (id)
+                        (if (memv id ids)
+                            ids
+                            (cons id ids)))
+               (lambda-exp (id body)
+                           (if (memv id ids)
+                               (all-ids-iter body ids)
+                               (all-ids-iter body (cons id ids))))
+               (app-exp (rator rand)
+                        (all-ids-iter rator (all-ids-iter rand ids)))))
+(define fresh-id
+  (lambda (exp s)
+    (let ((syms (all-ids exp)))
+      (letrec
+              ((loop (lambda (n)
+                       (let ((sym (string->symbol
+                                    (string-append s
+                                                   (number->string n)))))
+                         (if (memv sym syms) (loop (+ n 1)) sym)))))
+        (loop 0)))))
+```
+</details>
+
