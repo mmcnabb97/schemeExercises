@@ -479,3 +479,253 @@ Implement fresh-id by defining all-ids, which finds all the symbols in an expres
 ```
 </details>
 
+
+## Exercise 2.11 [*]
+
+Extend parse-expression and unparse-expression to support this enhancement
+<details>
+<summary>Solution</summary>
+
+```
+part 1
+(define-datatype expression expression?
+                 (var-exp
+                   (id symbol?))
+                 (lambda-exp
+                   (id symbol?)
+                   (body expression?))
+                 (app-exp
+                   (rator expression?)
+                   (rand expression?))
+                 (lit-exp
+                   (datum is-positive?))
+                 (primapp-exp
+                   (prim is-primitive?)
+                   (rand1 expression?)
+                   (rand2 expression?)))
+
+(define (is-primitive? proc)
+    (or (eqv? proc '*)
+        (eqv? proc '+)
+        (eqv? proc '-)
+        (eqv? proc '/)))
+
+(define (is-positive? datum)
+    (and (number? datum)
+         (positive? datum)))
+
+(define (parse-expression datum)
+    (cond
+      ((symbol? datum) (var-exp datum))
+      ((is-positive? datum) (lit-exp datum))
+      ((pair? datum)
+       (cond ((eqv? (car datum) 'lambda)
+              (lambda-exp (caadr datum)
+                          (parse-expression (caddr datum))))
+             ((is-primitive? (car datum))
+              (primapp-exp (car datum)
+                           (parse-expression (cadr datum))
+                           (parse-expression (caddr datum))))
+             (else (app-exp
+                     (parse-expression (car datum))
+                     (parse-expression (cadr datum))))))
+      (else (eopl:error 'parse-expression
+                        "Invalid concrete syntax ~s" datum))))
+
+
+(define (unparse-expression exp)
+    (cases expression exp
+           (var-exp (id) id)
+           (lambda-exp (id body)
+                       (list 'lambda (list id)
+                             (unparse-expression body)))
+           (app-exp (rator rand)
+                    (list (unparse-expression rator)
+                          (unparse-expression rand)))
+           (lit-exp (datum) datum)
+           (primapp-exp (prim rand1 rand2)
+                        (list prim
+                              (unparse-expression rand1)
+                              (unparse-expression rand2)))))
+
+
+(define (lambda-calculus-subst exp subst-exp subst-id)
+    (letrec
+            ((subst
+               (lambda (exp)
+                 (cases expression exp
+                        (var-exp (id)
+                                 (if (eqv? id subst-id)
+                                     subst-exp
+                                     exp))
+                        (lambda-exp (id body)
+                                    (if (eqv? id subst-id)
+                                        exp
+                                        (lambda-exp id (subst body))))
+                        (app-exp (rator rand)
+                                 (app-exp (subst rator)
+                                          (subst rand)))
+                        (lit-exp (datum)
+                                 (lit-exp datum))
+                        (primapp-exp (prim rand1 rand2)
+                                     (primapp-exp prim
+                                                  (subst rand1)
+                                                  (subst rand2)))))))
+      (subst exp)))
+
+
+
+(define occurs-free?
+  (lambda (var exp)
+    (cases expression exp
+           (var-exp (id) (eqv? id var))
+           (lambda-exp (id body)
+                       (and (not (eqv? id var))
+                            (occurs-free? var body)))
+           (app-exp (rator rand)
+                    (or (occurs-free? var rator)
+                        (occurs-free? var rand)))
+           (lit-exp (datum) #f)
+           (primapp-exp (prim rand1 rand2)
+                        (or (occurs-free? var rand1)
+                            (occurs-free? var rand2))))))
+
+
+(define (all-ids exp)
+    (all-ids-iter exp '()))
+
+(define (all-ids-iter exp ids)
+        (cases expression exp
+               (var-exp (id)
+                        (if (memv id ids)
+                            ids
+                            (cons id ids)))
+               (lambda-exp (id body)
+                           (if (memv id ids)
+                               (all-ids-iter body ids)
+                               (all-ids-iter body (cons id ids))))
+               (app-exp (rator rand)
+                        (all-ids-iter rator (all-ids-iter rand ids)))
+               (lit-exp (datum) ids)
+               (primapp-exp (prim rand1 rand2)
+                            (all-ids-iter rand1 (all-ids-iter rand2 ids)))))
+
+(define (fresh-id exp s)
+    (let ((syms (all-ids exp)))
+      (letrec
+              ((loop (lambda (n)
+                       (let ((sym (string->symbol
+                                    (string-append s
+                                                   (number->string n)))))
+                         (if (memv sym syms) (loop (+ n 1)) sym)))))
+        (loop 0))))
+
+Part 2
+
+(define (lambda-calculus-subst exp subst-exp subst-id)
+    (letrec
+            ((subst
+               (lambda (exp)
+                 (cases expression exp
+                        (var-exp (id)
+                                 (if (eqv? id subst-id)
+                                     subst-exp
+                                     exp))
+                        (lambda-exp (id body)
+                                    (cond ((eqv? id subst-id) exp)
+                                          ((occurs-free? id subst-exp)
+                                           (let ((the-fresh-id
+                                                   (fresh-id body (symbol->string id))))
+                                             (lambda-exp the-fresh-id
+                                                         (subst (lambda-calculus-subst
+                                                                  body
+                                                                  (var-exp the-fresh-id)
+                                                                  id)))))
+                                          (else (lambda-exp id (subst body)))))
+                        (app-exp (rator rand)
+                                 (app-exp (subst rator)
+                                          (subst rand)))
+                        (lit-exp (datum)
+                                 (lit-exp datum))
+                        (primapp-exp (prim rand1 rand2)
+                                     (primapp-exp prim
+                                                  (subst rand1)
+                                                  (subst rand2)))))))
+      (subst exp)))
+```
+</details>
+
+
+## Exercise 2.12 [*]
+
+Implement these operators. Do they use recursion explicitly?
+<details>
+<summary>Solution</summary>
+
+```
+(define (alpha-subst exp dest-id orig-id)
+    (letrec
+            ((subst
+               (lambda (exp)
+                 (cases expression exp
+                        (var-exp (id) exp)
+                        (lambda-exp (id body)
+                                    (if (not (occurs-free? dest-id
+                                                           body))
+                                        (lambda-exp dest-id
+                                                    (lambda-calculus-subst
+                                                      body
+                                                      (var-exp dest-id)
+                                                      orig-id))
+                                        exp))
+                        (app-exp (rator rand) exp)
+                        (lit-exp (datum) exp)
+                        (primapp-exp (prim rand1 rand2) exp)))))
+      (subst exp)))
+
+(define (beta-subst exp)
+    (cases expression exp
+           (var-exp (id) exp)
+           (lambda-exp (id body) exp)
+           (app-exp (rator rand)
+                    (cases expression rator
+                           (var-exp (sub-id) exp)
+                           (lambda-exp (sub-id body)
+                                       (lambda-calculus-subst
+                                         body
+                                         rand
+                                         sub-id))
+                           (app-exp (sub-rator sub-rand) exp)
+                           (lit-exp (datum) exp)
+                           (primapp-exp (prim rand1 rand2) exp)))
+           (lit-exp (datum) exp)
+           (primapp-exp (prim rand1 rand2) exp)))
+
+(define (eta-subst exp)
+    (letrec
+            ((subst
+               (lambda (exp)
+                 (cases expression exp
+                        (var-exp (id) exp)
+                        (lambda-exp (id body)
+                                    (cases expression body
+                                           (var-exp (id) exp)
+                                           (lambda-exp (sub-id sub-body)
+                                                       exp)
+                                           (app-exp (rator rand)
+                                                    (if (not (occurs-free? rand
+                                                                           rator))
+                                                        rator
+                                                        exp))
+                                           (lit-exp (datum) exp)
+                                           (primapp-exp (prim rand1 rand2)
+                                                        exp)))
+                        (app-exp (rator rand) exp)
+                        (lit-exp (datum) exp)
+                        (primapp-exp (prim rand1 rand2) exp)))))
+      (subst exp)))
+      
+      
+ None use recursion explicitly.
+```
+</details>
