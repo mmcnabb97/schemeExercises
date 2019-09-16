@@ -729,3 +729,72 @@ Implement these operators. Do they use recursion explicitly?
  None use recursion explicitly.
 ```
 </details>
+
+## Exercise 2.13 [*]
+
+Define term to be either a variable, a constant, or a list of terms. implement parse-term, unparse-term, and all-ids for the term language
+<details>
+<summary>Solution</summary>
+
+```
+(define list-of
+  (lambda (pred)
+    (lambda (val)
+      (or (null? val)
+          (and (pair? val)
+               (pred (car val))
+               ((list-of pred) (cdr val)))))))
+
+(define constant?
+  (lambda (datum)
+    (or (string? datum)
+        (number? datum)
+        (boolean? datum)
+        (null? datum))))
+
+(define-datatype term term?
+                 (var-term
+                   (id symbol?))
+                 (constant-term
+                   (datum constant?))
+                 (app-term
+                   (terms (list-of term?))))
+
+(define (parse-term datum)
+    (cond
+      ((symbol? datum) (var-term datum))
+      ((constant? datum) (constant-term datum))
+      ((pair? datum)
+       (app-term (map (lambda (a-term)
+                        (parse-term a-term))
+                      datum)))
+      (else (eopl:error 'parse
+                        "Invalid syntax ~s" datum))))
+
+(define (unparse-term exp)
+    (cases term exp
+           (var-term (id) id)
+           (constant-term (datum) datum)
+           (app-term (terms)
+                     (map (lambda (term)
+                            (unparse-term term))
+                          terms))))
+
+(define (all-ids exp)
+    (all-ids-iter exp '()))
+
+(define (all-ids-iter exp ids)
+        (cases term exp
+               (var-term (id)
+                         (if (memv id ids)
+                             ids
+                             (cons id ids)))
+               (constant-term (datum) ids)
+               (app-term (terms)
+                         (if (null? terms)
+                             ids
+                             (all-ids-iter (car terms)
+                                           (all-ids-iter
+                                             (app-term (cdr terms)) ids))))))
+```
+</details>
