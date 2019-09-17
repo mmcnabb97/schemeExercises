@@ -854,4 +854,58 @@ Consider the datatype of stacks of values, with an interface consisting of empty
 ```
 </details>
 
+## Exercise 2.16 [*]
 
+Implement the procedure list-find-last-position, which is like list-find-position except that it returns the position of the rightmost matching symbol. Do this without reverse or list->vector. When is list-find-position and list-find-last-position the same?
+<details>
+<summary>Solution</summary>
+
+```
+(define (list-find-last-position sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym))los 0))
+
+(define (list-index pred ls index)
+    (cond ((null? ls) #f)
+          ((pred (car ls))
+           (if (memv (car ls) (cdr ls))
+               (list-index pred (cdr ls) (+ index 1))
+               index))
+          (else (list-index pred (cdr ls) (+ index 1)))))
+
+The procedures function the same whenever there is only one copy of the symbol in the list.
+```
+</details>
+
+## Exercise 2.17 [*]
+
+Add to the environment interface a predicate called has-association? rhat takes an environment env and symbol s and tests to see if s has associated value in env. Extend the procedural representation to implement this by representing the environemnt by two procedures: one that returns the value associated with a symbol and one that returns whether or not the symbol has an assoiation
+
+<details>
+<summary>Solution</summary>
+
+```
+(has-association? [f] s) = true if s=t and f(s)=k and [f] = (extend-env '(t) '(k) [g])
+                                or (has-association? [g] s)
+                           false if [f] = [0]
+
+(define (extend-env syms vals env)
+    (list
+      (lambda (sym)
+        (let ((pos (list-find-position sym syms)))
+          (if (number? pos)
+              (list-ref vals pos)
+              (apply-env env sym))))
+      (lambda (sym)
+        (if (memv sym syms)
+            #t
+            (has-association? env sym)))))
+
+(define (has-association? env sym)
+    ((cadr env) sym))
+
+(define (apply-env env sym)
+    ((car env) sym))
+
+                   
+```
+</details>
