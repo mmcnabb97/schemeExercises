@@ -798,3 +798,60 @@ Define term to be either a variable, a constant, or a list of terms. implement p
                                              (app-term (cdr terms)) ids))))))
 ```
 </details>
+
+## Exercise 2.14 [*]
+
+Consider the datatype of stacks of values, with an interface consisting of empty-stack, push, pop, top and empty-stack?. Write a specification for these operations in the style of the example above. What operations are constructors and which are observers?
+<details>
+<summary>Solution</summary>
+
+```
+(empty-stack) = [0] ;
+
+(push e [s]) = [t] where (top [t]) = e and (pop [t]) = [s]
+
+(pop [s]) = error if (empty-stack? [s]),
+            [t] where (push (top [s]) t) = s otherwise
+
+(top [s]) = error if (empty-stack? [s]),
+            e where (push e (pop [s])) = [s] otherwise
+
+(empty-stack? [s]) = true if [s] = [0],
+                     false otherwise
+                     
+The constructors are push, pop, and empty-stack.
+The observers are empty-stack? and top.
+```
+</details>
+
+## Exercise 2.15 [*]
+
+Consider the datatype of stacks of values, with an interface consisting of empty-stack, push, pop, top and empty-stack?. Write a specification for these operations in the style of the example above. What operations are constructors and which are observers?
+<details>
+<summary>Solution</summary>
+
+```
+(define a-list '(1 2 3 4 5))
+
+
+(define (empty-stack)
+  '())
+
+(define (push lst var)
+  (list var lst))
+
+(define (pop lst)
+  (let ([li (car lst)])
+  (set! lst (cdr lst))
+  li))
+
+(define (top lst)
+  (car lst))
+
+(define (empty-stack? lst)
+  (eqv? '() lst))
+
+```
+</details>
+
+
