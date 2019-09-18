@@ -909,3 +909,24 @@ Add to the environment interface a predicate called has-association? rhat takes 
                    
 ```
 </details>
+
+
+## Exercise 2.17 [*]
+
+Implement environment-to-list
+
+<details>
+<summary>Solution</summary>
+
+```
+(define (environment-to-list e)
+    (cases environment e
+           (empty-env-record ()
+                             (list 'empty-env-record))
+           (extended-env-record (syms vals env)
+                                (append '(extended-env-record)
+                                        (list syms)
+                                        (list vals)
+                                        (list (environment-to-list env))))))
+```
+</details>
