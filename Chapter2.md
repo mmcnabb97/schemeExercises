@@ -911,7 +911,7 @@ Add to the environment interface a predicate called has-association? rhat takes 
 </details>
 
 
-## Exercise 2.17 [*]
+## Exercise 2.18 [*]
 
 Implement environment-to-list
 
@@ -928,5 +928,92 @@ Implement environment-to-list
                                         (list syms)
                                         (list vals)
                                         (list (environment-to-list env))))))
+```
+</details>
+
+
+## Exercise 2.19 [*]
+
+Implement the stack data type of exercise 2.14 using an abstract syntax tree representation
+
+<details>
+<summary>Solution</summary>
+
+```
+(define scheme-value? (lambda (v) #t))
+
+(define-datatype stack stack?
+                 (empty-stack-record)
+                 (push-record
+                   (e scheme-value?)
+                   (s stack?))
+                 (pop-record
+                   (s stack?)))
+
+
+(define empty-stack
+  (lambda ()
+    (empty-stack-record)))
+
+(define (push e s)
+    (push-record e s))
+
+(define (pop s)
+    (cases stack s
+           (empty-stack-record ()
+             (eopl:error 'pop "The Stack is Empty"))
+           (push-record (e1 s1) s1)
+           (pop-record (s1) s1)))
+
+(define (top s)
+    (cases stack s
+           (empty-stack-record ()
+             (eopl:error 'top "Empty stack"))
+           (push-record (e1 s1) e1)
+           (pop-record (s1) (top s1))))
+
+(define (empty-stack? s)
+    (cases stack s
+           (empty-stack-record () #t)
+           (push-record (e s1) #f)
+           (pop-record (s1) (empty-stack? s1))))
+```
+</details>
+
+## Exercise 2.21 [*]
+
+Implement has-association? of exercise 2.17 to the abstract syntax tree representation.
+
+<details>
+<summary>Solution</summary>
+
+```
+(define (has-association? env sym)
+    (cases environment env
+           (empty-env-record () #f)
+           (extended-env-record
+             (syms vals env)
+             (if (memv sym syms)
+                 #t
+                 (has-association? env sym)))))
+```
+</details>
+
+## Exercise 2.21 [*]
+
+Implement has-association? of exercise 2.17 to the abstract syntax tree representation.
+
+<details>
+<summary>Solution</summary>
+
+```
+(define (has-association? env sym)
+    (cases environment env
+           (empty-env-record () #f)
+           (extended-env-record
+             (syms vals env)
+             (if (memv sym syms)
+                 #t
+                 (has-association? env sym)))))
 ```
 </details>
