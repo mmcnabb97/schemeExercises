@@ -999,4 +999,147 @@ Implement has-association? of exercise 2.17 to the abstract syntax tree represen
 ```
 </details>
 
+## Exercise 2.21 [*]
+
+(What list structure does (extend-env '() '() (empty-env)) produce
+<details>
+<summary>Solution</summary>
+
+```
+(((()())))
+```
+</details>
+
+## Exercise 2.22 [*]
+
+Design a 2-element rib datatype and use it to implement the environement interface.
+<details>
+<summary>Solution</summary>
+
+```
+(define scheme-value? (lambda (v) #t))
+
+(define-datatype 2-rib 2-rib?
+                 (empty-2-rib-record)
+                 (extend-2-rib-record
+                   (syms (list-of symbol?))
+                   (vals (list-of scheme-value?))
+                   (rib 2-rib?)))
+
+(define empty-2-rib
+  (lambda ()
+    (empty-2-rib-record)))
+
+(define (extend-2-rib sym vals rib)
+  (extend-2-rib-record sym vals rib))
+
+(define (lookup sym rib)
+  (cases 2-rib rib
+    (empty-2-rib-record ()
+                        (eopl:error 'lookup "This is an empty list"))
+    (extend-2-rib-record (syms vals trib)
+                         (let ((pos (list-find-position sym syms)))
+               (if (number? pos)
+                   (list-ref vals pos)
+                   (lookup sym trib))))))
+
+(define (list-find-position sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los))
+
+(define (list-index pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((temp (list-index pred (cdr ls))))
+              (if (number? temp)
+                  (+ temp 1)
+                  #f)))))
+
+(define empty-env (lambda () (empty-2-rib)))
+
+(define (extend-env syms vals env) (extend-2-rib syms vals env))
+
+(define (apply-env env sym) (lookup sym env))
+```
+</details>
+
+## Exercise 2.23 [*]
+
+A simpler representation of environements would consist of a single pair of ribs: a list of symbols and a list of values. Implement the environemnt interface for this representation.
+<details>
+<summary>Solution</summary>
+
+```
+(define scheme-value? (lambda (v) #t))
+
+
+(define-datatype rib rib?
+  (rib-record
+   (sym (list-of symbol?))
+   (vals (list-of scheme-value?))))
+
+(define empty-rib
+  (lambda ()
+    (rib-record '() '())))
+
+(define (extend-rib sym vals r)
+  (cases rib r
+    (rib-record
+     (sym1 vals1)
+     (rib-record
+      (append sym1 sym)
+      (append vals1 vals)))))
+
+(define (lookup sym r)
+  (cases rib r
+    (rib-record (syms vals)
+                (let ((pos (list-find-position sym syms)))
+                  (if (number? pos)
+                      (list-ref vals pos)
+                      (eopl:error 'lookup "~s is not in the list" sym))))))
+
+
+
+(define (list-find-position sym los)
+    (list-index (lambda (sym1) (eqv? sym1 sym)) los))
+
+(define (list-index pred ls)
+    (cond
+      ((null? ls) #f)
+      ((pred (car ls)) 0)
+      (else (let ((temp (list-index pred (cdr ls))))
+              (if (number? temp)
+                  (+ temp 1)
+                  #f)))))
+
+(define empty-env (lambda () (empty-rib)))
+
+(define (extend-env syms vals env) (extend-rib syms vals env))
+
+(define (apply-env env sym) (lookup sym env))
+```
+</details>
+
+## Exercise 2.24 [*]
+
+
+<details>
+<summary>Solution</summary>
+
+```
+(define empty-subst
+  (lambda ()
+    (lambda (sym)
+      (var-term sym))))
+
+(define (apply-subst s i)
+  (s i))
+
+(define (extend-subst i t s)
+  (lambda (sym)
+    (if (eqv? i sym) t (apply-subst s i))))
+    
+
+```
+</details>
 
