@@ -980,7 +980,7 @@ Implement the stack data type of exercise 2.14 using an abstract syntax tree rep
 ```
 </details>
 
-## Exercise 2.21 [*]
+## Exercise 2.20 [*]
 
 Implement has-association? of exercise 2.17 to the abstract syntax tree representation.
 
@@ -999,21 +999,4 @@ Implement has-association? of exercise 2.17 to the abstract syntax tree represen
 ```
 </details>
 
-## Exercise 2.21 [*]
 
-Implement has-association? of exercise 2.17 to the abstract syntax tree representation.
-
-<details>
-<summary>Solution</summary>
-
-```
-(define (has-association? env sym)
-    (cases environment env
-           (empty-env-record () #f)
-           (extended-env-record
-             (syms vals env)
-             (if (memv sym syms)
-                 #t
-                 (has-association? env sym)))))
-```
-</details>
