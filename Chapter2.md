@@ -1122,11 +1122,13 @@ A simpler representation of environements would consist of a single pair of ribs
 
 ## Exercise 2.24 [*]
 
+Define a substitution to a function whose domain is the set of scheme symbols and whose range is the set of Scheme symbols and whose range is the set of all terms (exercise 2.13). The interface for substitutions consists of (empty-subst), which binds its arguements,
 
 <details>
 <summary>Solution</summary>
 
 ```
+(part 1)
 (define empty-subst
   (lambda ()
     (lambda (sym)
@@ -1140,6 +1142,74 @@ A simpler representation of environements would consist of a single pair of ribs
     (if (eqv? i sym) t (apply-subst s i))))
     
 
+
+(part 2)
+(define-datatype subst subst?
+                 (empty-subst-record)
+                 (extended-subst-record
+                   (i symbol?)
+                   (t term?)
+                   (s subst?)))
+                   
+(define empty-subst
+ (lambda ()
+   (empty-subst-record)))
+
+(define (extended-subst i t s)
+  (extended-subst-record i t s))
+
+(define (apply-subst s sym)
+  (cases subst s
+    (empty-subst-record () (var-term))
+    (extended-subst-record (i t s)
+                           (if (eqv? sym i)
+                               t
+                               (apply-subst s sym)))))
+    
+    
+
+
+(define (subst-in-term t s)
+  (cases term t
+    (var-term (id) (apply-subst s id))
+    (constant-term (datum) t)
+    (app-term (terms)
+              (app-term (map (lambda (sterm) (subst-in-term sterm s))
+                               terms)))))
+
+(define (subst-in-terms t s)
+  (map (lambda (sterm) (subst-in-term sterm s))
+                               t))
 ```
 </details>
 
+## Exercise 2.25 [*]
+
+Implement unification
+<details>
+<summary>Solution</summary>
+
+```
+(define (unit-subst sym t)
+  (extended-subst sym t (empty-subst)))
+
+(define (compose-substs s1 s2)
+  (cases subst s1
+    (empty-subst-record () s1)
+    (extended-subst-record (i t s)
+                           (extended-subst-record (i t (compose-substs s1 s))))))
+                           
+   
+```
+</details>
+
+## Exercise 2.26 [*]
+
+(What list structure does (extend-env '() '() (empty-env)) produce
+<details>
+<summary>Solution</summary>
+
+```                        
+   
+```
+</details>
