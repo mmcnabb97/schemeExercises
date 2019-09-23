@@ -1205,11 +1205,67 @@ Implement unification
 
 ## Exercise 2.26 [*]
 
-(What list structure does (extend-env '() '() (empty-env)) produce
+A cell interface consists of these four operations: cell, cell?, contents, and setcell. The procedure cell stores its argument in a memory location; cell? determines if its argument is a cell; contents retrieves the value of the cell; and setcell stores its second arguement in the first arguement, which must be a cell. Use the datatype reference with a one-element vector to implement the cell interface. Then use the queue interface style to encapsulate these definitions.
+(define-datatype reference reference?
+                 (a-ref
+                   (position integer?)
+                   (vec vector?)))
+                   
 <details>
 <summary>Solution</summary>
 
 ```                        
-   
+(define cell
+  (lambda ()
+    (a-ref 0 (vector 'empty))))
+
+(define (cell? c)
+  (and (reference? c)
+       (cases reference c
+         (a-ref (p v)
+                (and (= p 0)
+                     (= (vector-length v) 1))))))
+
+(define (content c)
+  (cases reference c
+    (a-ref (p v)
+           (vector-ref v 0))))
+
+(define (setcall x c)
+  (cases reference c
+    (a-ref (p v)
+           (vector-set! v p x))))
+           
+(define cell
+  (lambda ()
+    (let ((c (a-ref 0 (vector 'undefined))))
+      (let ((cell?
+              (lambda ()
+                (and (reference? c)
+                     (cases reference c
+                       (a-ref (p v)
+                        (and (= p 0)
+                     (= (vector-length v) 1)))))))
+            (contents
+             (lambda ()
+              (cases reference c
+                (a-ref (p v)
+           (vector-ref v 0)))))
+            (setcell
+              (lambda (x)
+                (cases reference c
+                  (a-ref (p v)
+                         (vector-set! v p x))))))
+        (vector cell? contents setcell)))))
+
+
+(define (cell? c)
+  (vector-ref c 0))
+
+(define (contents c)
+  (vector-ref c 1))
+
+(define (setcell c)
+  (vector-ref c 2))
 ```
 </details>
