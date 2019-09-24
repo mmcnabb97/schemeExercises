@@ -77,3 +77,47 @@ The order should not affect the result.
 ```
 </details>
 
+## Exercise 3.3 [*]
+
+Write parse-program. See section 2.2.2
+
+<details>
+<summary>Solution</summary>
+
+```                        
+(define (parse-expression datum)
+    (cond
+      ((number? datum) (lit-exp datum))
+      ((symbol? datum) (var-exp datum))
+      ((pair? datum)
+       (let ((primitive (parse-primitive (car exp))))
+                 (if (not (= (cdr primitive) (length (cdr exp))))
+                     (eopl:error 'parse-primitive
+                                 "Incorrect number of parameters in ~s, correct number is ~s" 
+                                 (car primitive) (length (cdr exp)))
+                     (primapp-exp (car primitive)
+                                  (map (lambda (rand)
+                                         (parse-expression rand))
+                                       (cdr exp))))))
+       (else (eopl:error 'parse-expression
+              "Invalid concrete syntax ~s" datum))))
+
+(define (parse-primitive prim)
+  (cond ((eqv? prim '+)
+         (cons (add-prim) 2))
+        ((eqv? prim '-)
+         (cons (subtract-prim) 2))
+        ((eqv? prim '*)
+         (cons (mult-prim) 2))
+        ((eqv? prim 'add1)
+         (cons (incr-prim) 1))
+        ((eqv? prim 'sub1)
+         (cons (decr-prim) 1))
+        ))
+
+(define (parse-program prog)
+  (a-program (parse-expression prog)))
+        
+  
+```
+</details>
