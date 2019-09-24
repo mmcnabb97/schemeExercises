@@ -60,3 +60,20 @@ Consider the fourth example above. Then implement program-to-list so that it ret
    
 ```
 </details>
+
+## Exercise 3.2 [*]
+
+In what order are subexpressions in a primative application evaluated? Is there a way too determine this empirically? Can the order affect the Result?
+
+<details>
+<summary>Solution</summary>
+
+```                        
+They are evaluated left-to-right
+
+The evaluation order of subexpressions is determined by scheme
+
+The order should not affect the result.
+```
+</details>
+
