@@ -121,3 +121,26 @@ Write parse-program. See section 2.2.2
   
 ```
 </details>
+
+## Exercise 3.4 [*]
+
+Test Eval-program using both run and read-eval-print loop
+
+<details>
+<summary>Solution</summary>
+
+```                        
+> (run '(add1 8))
+> 9
+
+First Test Works
+
+>(read-eval-print)
+->add1 8
+9
+
+Test 2 Works
+
+Both tests are functional
+```
+</details>
