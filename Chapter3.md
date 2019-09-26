@@ -144,3 +144,102 @@ Test 2 Works
 Both tests are functional
 ```
 </details>
+
+## Exercise 3.4 [*]
+
+Test Eval-program using both run and read-eval-print loop
+
+<details>
+<summary>Solution</summary>
+
+```                        
+> (run '(add1 8))
+> 9
+
+First Test Works
+
+>(read-eval-print)
+-->add1 (8)
+9
+
+Test 2 Works
+
+Both tests are functional
+```
+</details>
+
+
+## Exercise 3.5 [*]
+
+
+
+<details>
+<summary>Solution</summary>
+
+```                        
+(define (parse-primitive prim)
+  (cond ((eqv? prim '+)
+         (cons (add-prim) 2))
+        ((eqv? prim '-)
+         (cons (subtract-prim) 2))
+        ((eqv? prim '*)
+         (cons (mult-prim) 2))
+        ((eqv? prim 'add1)
+         (cons (incr-prim) 1))
+        ((eqv? prim 'sub1)
+         (cons (decr-prim) 1))
+        ((eqv? prim 'print)
+               (cons (print-prim) 1))
+        ))
+```
+</details>
+
+## Exercise 3.6 [*]
+
+
+
+<details>
+<summary>Solution</summary>
+
+```                        
+(define (parse-primitive prim)
+  (cond ((eqv? prim '+)
+         (cons (add-prim) 2))
+        ((eqv? prim '-)
+         (cons (subtract-prim) 2))
+        ((eqv? prim '*)
+         (cons (mult-prim) 2))
+        ((eqv? prim 'add1)
+         (cons (incr-prim) 1))
+        ((eqv? prim 'sub1)
+         (cons (decr-prim) 1))
+        ((eqv? prim 'print)
+               (cons (print-prim) 1))
+        ))
+```
+</details>
+
+## Exercise 3.7 [*]
+
+TODO
+
+<details>
+<summary>Solution</summary>
+
+```                        
+(define (parse-primitive prim)
+  (cond ((eqv? prim '+)
+         (cons (add-prim) 2))
+        ((eqv? prim '-)
+         (cons (subtract-prim) 2))
+        ((eqv? prim '*)
+         (cons (mult-prim) 2))
+        ((eqv? prim 'add1)
+         (cons (incr-prim) 1))
+        ((eqv? prim 'sub1)
+         (cons (decr-prim) 1))
+        ((eqv? prim 'print)
+               (cons (print-prim) 1))
+        ))
+```
+</details>
