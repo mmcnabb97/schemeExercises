@@ -91,14 +91,10 @@ Write parse-program. See section 2.2.2
       ((symbol? datum) (var-exp datum))
       ((pair? datum)
        (let ((primitive (parse-primitive (car exp))))
-                 (if (not (= (cdr primitive) (length (cdr exp))))
-                     (eopl:error 'parse-primitive
-                                 "Incorrect number of parameters in ~s, correct number is ~s" 
-                                 (car primitive) (length (cdr exp)))
                      (primapp-exp (car primitive)
                                   (map (lambda (rand)
                                          (parse-expression rand))
-                                       (cdr exp))))))
+                                       (cdr exp)))))
        (else (eopl:error 'parse-expression
               "Invalid concrete syntax ~s" datum))))
 
@@ -145,28 +141,6 @@ Both tests are functional
 ```
 </details>
 
-## Exercise 3.4 [*]
-
-Test Eval-program using both run and read-eval-print loop
-
-<details>
-<summary>Solution</summary>
-
-```                        
-> (run '(add1 8))
-> 9
-
-First Test Works
-
->(read-eval-print)
--->add1 (8)
-9
-
-Test 2 Works
-
-Both tests are functional
-```
-</details>
 
 
 ## Exercise 3.5 [*]
@@ -191,6 +165,17 @@ Both tests are functional
         ((eqv? prim 'print)
                (cons (print-prim) 1))
         ))
+        
+  (define apply-primitive
+  (lambda (prim args)
+    (cases primitive prim
+      (add-prim () (+ (car args) (cadr args)))
+      (subtract-prim () (- (car args) (cadr args)))
+      (mult-prim () (* (car args) (cadr args)))
+      (incr-prim () (+ (car args) 1))
+      (decr-prim () (- (car args) 1))
+      (print-prim () (1))
+      )))
 ```
 </details>
 
@@ -216,6 +201,18 @@ Both tests are functional
         ((eqv? prim 'print)
                (cons (print-prim) 1))
         ))
+        
+        (define apply-primitive
+  (lambda (prim args)
+    (cases primitive prim
+      (add-prim () (+ (car args) (cadr args)))
+      (subtract-prim () (- (car args) (cadr args)))
+      (mult-prim () (* (car args) (cadr args)))
+      (incr-prim () (+ (car args) 1))
+      (decr-prim () (- (car args) 1))
+      (print-prim () (1))
+      (minus-prim () (* (car args) -1))
+      )))
 ```
 </details>
 
@@ -240,6 +237,119 @@ TODO
          (cons (decr-prim) 1))
         ((eqv? prim 'print)
                (cons (print-prim) 1))
+        ((eqv? prim 'minus)
+               (cons (minus-prim) 1))
+        ((eqv? prim 'list) 
+               (cons (list-prim) 3)) 
+        ((eqv? prim 'cons) 
+               (cons (cons-prim) 2))
+        ((eqv? prim 'car) 
+               (cons (car-prim) 1))
+        ((eqv? prim 'cdr) 
+               (cons (cdr-prim) 1))
         ))
+        
+(define apply-primitive
+  (lambda (prim args)
+    (cases primitive prim
+      (add-prim () (+ (car args) (cadr args)))
+      (subtract-prim () (- (car args) (cadr args)))
+      (mult-prim () (* (car args) (cadr args)))
+      (incr-prim () (+ (car args) 1))
+      (decr-prim () (- (car args) 1))
+      (print-prim () (1))
+      (minus-prim () (* (car args) -1))
+      (list-prim () (list (car args) (list (cadr args) (caddr))))
+      (car-prim () (car args))
+      (cdr-prim () (cdr args))
+      (cons-prim () (cons (car args) (cdr args)))
+      (empty-list-prim () '())
+      )))
 ```
 </details>
+
+## Exercise 3.8 [*]
+
+TODO
+
+<details>
+<summary>Solution</summary>
+
+```                        
+(define (parse-primitive prim)
+  (cond ((eqv? prim '+)
+         (cons (add-prim) 2))
+        ((eqv? prim '-)
+         (cons (subtract-prim) 2))
+        ((eqv? prim '*)
+         (cons (mult-prim) 2))
+        ((eqv? prim 'add1)
+         (cons (incr-prim) 1))
+        ((eqv? prim 'sub1)
+         (cons (decr-prim) 1))
+        ((eqv? prim 'print)
+               (cons (print-prim) 1))
+        ((eqv? prim 'minus)
+               (cons (minus-prim) 1))
+        ((eqv? prim 'list) 
+               (cons (list-prim) 3)) 
+        ((eqv? prim 'cons) 
+               (cons (cons-prim) 2))
+        ((eqv? prim 'car) 
+               (cons (car-prim) 1))
+        ((eqv? prim 'cdr) 
+               (cons (cdr-prim) 1))
+        ((eqv? prim 'setcar)
+               (cons (setcar-prim) 2))
+        ))
+        
+        
+(define apply-primitive
+  (lambda (prim args)
+    (cases primitive prim
+      (add-prim () (+ (car args) (cadr args)))
+      (subtract-prim () (- (car args) (cadr args)))
+      (mult-prim () (* (car args) (cadr args)))
+      (incr-prim () (+ (car args) 1))
+      (decr-prim () (- (car args) 1))
+      (print-prim () (1))
+      (minus-prim () (* (car args) -1))
+      (list-prim () (list (car args) (list (cadr args) (caddr))))
+      (car-prim () (car args))
+      (cdr-prim () (cdr args))
+      (cons-prim () (cons (car args) (cdr args)))
+      (empty-list-prim () '())
+      (setcar-prim () (cons (car args) (cdr (cadr args))))
+      )))
+```
+</details>
+
+## Exercise 3.9 [*]
+
+TODO
+
+<details>
+<summary>Solution</summary>
+
+```
+Did this one first since i figured it was easier to just start the implementation with it.
+(define (parse-expression datum)
+    (cond
+      ((number? datum) (lit-exp datum))
+      ((symbol? datum) (var-exp datum))
+      ((pair? datum)
+       (let ((primitive (parse-primitive (car exp))))
+                 (if (not (= (cdr primitive) (length (cdr exp))))
+                     (eopl:error 'parse-primitive
+                                 "Incorrect number of parameters in ~s, correct number is ~s" 
+                                 (car primitive) (length (cdr exp)))
+                     (primapp-exp (car primitive)
+                                  (map (lambda (rand)
+                                         (parse-expression rand))
+                                       (cdr exp))))))
+       (else (eopl:error 'parse-expression
+              "Invalid concrete syntax ~s" datum))))
+      )))
+```
+</details>
+
